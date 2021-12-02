@@ -11,7 +11,7 @@ __all__ = ['ToggleGC']
 log = logging.getLogger(__name__)
 
 
-class ToggleGC(meta=AutoDecoratorContextManagerType):
+class ToggleGC(metaclass=AutoDecoratorContextManagerType):
     """
     Toggle Garbage Collection.
     This class can be used as a context manager or function decorator.
