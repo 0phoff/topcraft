@@ -11,7 +11,7 @@ from ._util import AutoDecoratorContextManagerType
 from ._gc import ToggleGC
 
 __all__ = ['Timer', 'Timeit']
-log = logging.getLogger('startup.profile')
+log = logging.getLogger(__name__)
 
 # Use perf_counter_ns if available
 try:

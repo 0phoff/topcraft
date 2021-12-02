@@ -12,7 +12,7 @@ from memory_profiler import Pipe, Process, choose_backend, _get_memory
 from ._util import AutoDecoratorContextManagerType
 
 __all__ = ['Profiler', 'Profileit']
-log = logging.getLogger('startup.profile')
+log = logging.getLogger(__name__)
 
 
 class MemTimer(Process):
