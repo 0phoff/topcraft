@@ -31,7 +31,7 @@ class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         - function decorator
 
     Args:
-        unit (s, ms, us or ns): Time unit; Default 'ms'
+        unit (s, ms, us or ns): Time unit; Default 's'
         label (str): Label to use for logging the timer; Default 'time'
         verbose (boolean): Whether to log times; Default True
         store (dict-like): Object to store timings instead of logging (should likely not be used by user); Default None
@@ -49,10 +49,10 @@ class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         'ns': 1e0 * time_factor,
     }
 
-    def __init__(self, unit='ms', label='time', verbose=True, store=None):
+    def __init__(self, unit='s', label='time', verbose=True, store=None):
         self.label = label
         self.verbose = verbose
-        self.unit = unit if unit.lower() in self._units else 'ms'
+        self.unit = unit if unit.lower() in self._units else 's'
         self.unit_factor = self._units[self.unit.lower()]
         if isinstance(store, dict):
             self.store = store
@@ -160,10 +160,10 @@ class Timeit(metaclass=AutoIterType):
         ...         # benchmark code
         ...         pass
     """
-    def __init__(self, repeat=1, unit='ms', label='time', verbose=False):
+    def __init__(self, repeat=1, unit='s', label='time', verbose=False):
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Time._units else 'ms'
+        self.unit = unit if unit.lower() in Time._units else 's'
         self.verbose = verbose
         self.values = defaultdict(list)
 
