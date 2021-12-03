@@ -27,7 +27,7 @@ Disable/Enable/Toggle the garbage collector.
 
 </dd>
 
-<dt>Timer</dt>
+<dt>Time</dt>
 <dd>
 
 Timing tool that allows you to measure time in 3 ways:
@@ -41,14 +41,14 @@ Timing tool that allows you to measure time in 3 ways:
 <dd>
 
 Tool to benchmark timings.
-This tool use the `Timer` to measure your code executions multiple times and report the best and average results.
+This tool use the `Time` class to measure your code executions multiple times and report the best and average results.
 
 </dd>
 
-<dt>Profiler</dt>
+<dt>Mem</dt>
 <dd>
 
-Profiler tool that allows you to measure memory usage in 3 ways:
+Memory Profiling tool that allows you to measure memory usage in 3 ways:
 - start() - split() - stop() methods
 - decorator
 - context manager
@@ -57,15 +57,37 @@ Note that memory profiling is not exact in python and you should take the result
 
 </dd>
 
-<dt>Profileit</dt>
+<dt>Memit</dt>
 <dd>
 
 Tool to benchmark memory usage.
-This tool use the `Profiler` to measure your code executions multiple times and report the worst and average results.
+This tool use the `Mem` class to measure your code executions multiple times and report the worst and average results.
+
+</dd>
+
+<dt>Profile</dt>
+<dd>
+
+Tool to measure either Time,Memory or do nothing depending on the `TOP_PROFILE` environment variable:
+- TOP_PROFILE=time : Perform time measurement
+- TOP_PROFILE=mem  : Perform memory measurement
+- TOP_PROFILE=... or not set : Do nothing
+
+</dd>
+
+<dt>Profileit</dt>
+<dd>
+
+Tool to benchmark either Time,Memory or do nothing depending on the `TOP_PROFILE` environment variable:
+- TOP_PROFILE=time : Perform time benchmark
+- TOP_PROFILE=mem  : Perform memory benchmark
+- TOP_PROFILE=... or not set : Do nothing
 
 </dd>
 
 </dl>
+
+> Note that you can use the built-in `help()` function to get more information about the arguments of each of these classes.
 
 ## Automatic Import
 Python has a nifty feature called the `PYTHONSTARTUP` environment variable.

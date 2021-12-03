@@ -10,7 +10,7 @@ from functools import wraps
 from ._util import AutoDecoratorContextManagerType
 from ._gc import ToggleGC
 
-__all__ = ['Timer', 'Timeit']
+__all__ = ['Time', 'Timeit']
 log = logging.getLogger(__name__)
 
 # Use perf_counter_ns if available
@@ -22,7 +22,7 @@ except ImportError:
     time_factor = 1e9
 
 
-class Timer(metaclass=AutoDecoratorContextManagerType):
+class Time(metaclass=AutoDecoratorContextManagerType):
     """
     This class allows you to measure code execution time.
     You can use it in various different ways:
@@ -105,6 +105,7 @@ class Timer(metaclass=AutoDecoratorContextManagerType):
 
     def __exit__(self, ex_type, ex_value, trace):
         self.stop()
+        return False
 
     def __call__(self, fn):
         @wraps(fn)
@@ -162,7 +163,7 @@ class Timeit:
     def __init__(self, repeat=1, unit='ms', label='time', verbose=False):
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Timer._units else 'ms'
+        self.unit = unit if unit.lower() in Time._units else 'ms'
         self.verbose = verbose
         self.values = defaultdict(list)
 
@@ -173,14 +174,13 @@ class Timeit:
         if len(self.values):
             log.warning('self.values is not empty, consider calling reset between benchmarks')
 
-        bg = Timer(self.unit, self.label, False, {})
-        fg = Timer(self.unit, self.label, False, {})
+        bg = Time(self.unit, self.label, False, {})
+        fg = Time(self.unit, self.label, False, {})
 
         with ToggleGC(False):
             for i in range(self.repeat+1):
-                bg.start()
-                yield fg
-                bg.stop()
+                with bg:
+                    yield fg
 
                 if i == 0:
                     fg.reset()

@@ -11,7 +11,7 @@ from memory_profiler import Pipe, Process, choose_backend, _get_memory
 
 from ._util import AutoDecoratorContextManagerType
 
-__all__ = ['Profiler', 'Profileit']
+__all__ = ['Mem', 'Memit']
 log = logging.getLogger(__name__)
 
 
@@ -67,7 +67,7 @@ class MemTimer(Process):
         self.pipe.close()
 
 
-class Profiler(metaclass=AutoDecoratorContextManagerType):
+class Mem(metaclass=AutoDecoratorContextManagerType):
     """
     This class allows you to measure code memory usage.
     You can use it in various different ways:
@@ -79,13 +79,13 @@ class Profiler(metaclass=AutoDecoratorContextManagerType):
         unit (b, kb, mb, gb): Memory unit; Default 'Mb'
         label (str): Default label to use when stopping the profiler; Default 'memory'
         verbose (boolean): Whether to log times; Default True
-        poll_interval (number): Seconds the monitoring process waits for input between memory measurements; Default 1ms
         store (dict-like): Object to store timings instead of logging (should likely not be used by user); Default None
+        poll_interval (number): Seconds the monitoring process waits for input between memory measurements; Default 1ms
 
     Note:
         When benchmarking a piece of code, it is usually a good idea to run it once first,
         as it will initialize "global" memory.
-        The `Profileit` class takes care of this automatically.
+        The `Memit` class takes care of this automatically.
     """
     _units = {
         'b':  2 ** 20,
@@ -94,7 +94,7 @@ class Profiler(metaclass=AutoDecoratorContextManagerType):
         'gb': 2 ** -10,
     }
 
-    def __init__(self, unit='Mb', label='memory', verbose=True, poll_interval=1e-3, store=None):
+    def __init__(self, unit='Mb', label='memory', verbose=True, store=None, poll_interval=1e-3):
         self.label = label
         self.verbose = verbose
         self.poll_interval = poll_interval
@@ -171,6 +171,7 @@ class Profiler(metaclass=AutoDecoratorContextManagerType):
 
     def __exit__(self, ex_type, ex_value, trace):
         self.stop()
+        return False
 
     def __call__(self, fn):
         @wraps(fn)
@@ -194,7 +195,7 @@ class Profiler(metaclass=AutoDecoratorContextManagerType):
         self.reset()
 
 
-class Profileit:
+class Memit:
     """
     This class allows you to benchmark the memory of a certain piece of code, by runnning it multiple times.
     It will automatically run your code once before starting the benchmark.
@@ -212,28 +213,28 @@ class Profileit:
         thus allowing to remove potentially unused memory.
 
     Example:
-        >>> for _ in Profileit(10):
+        >>> for _ in Memit(10):
         ...     # benchmark code
         ...     pass
 
-        >>> for p in Profileit(100):
+        >>> for m in Memit(100):
         ...     # setup code
-        ...     p.start()
+        ...     m.start()
         ...     # first part
-        ...     p.split()
+        ...     m.split()
         ...     # second part
-        ...     p.stop()
+        ...     m.stop()
 
-        >>> for p in Profileit(1000):
+        >>> for m in Memit(1000):
         ...     # setup code
-        ...     with p:
+        ...     with m:
         ...         # benchmark code
         ...         pass
     """
     def __init__(self, repeat=1, unit='Mb', label='memory', verbose=False, poll_interval=1e-3):
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Profiler._units else 'Mb'
+        self.unit = unit if unit.lower() in Mem._units else 'Mb'
         self.verbose = verbose
         self.poll_interval = poll_interval
         self.values = defaultdict(list)
@@ -245,13 +246,12 @@ class Profileit:
         if len(self.values):
             log.warning('self.values is not empty, consider calling reset between benchmarks')
 
-        bg = Profiler(self.unit, self.label, False, self.poll_interval, {})
-        fg = Profiler(self.unit, self.label, False, self.poll_interval, {})
+        bg = Mem(self.unit, self.label, False, {}, self.poll_interval)
+        fg = Mem(self.unit, self.label, False, {}, self.poll_interval)
 
         for i in range(self.repeat+1):
-            bg.start()
-            yield fg
-            bg.stop()
+            with bg:
+                yield fg
 
             if i == 0:
                 fg.reset()
