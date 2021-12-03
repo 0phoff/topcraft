@@ -11,6 +11,8 @@ All tools in this package are exported to the root level.
 This means that if you `import top`, you can access everything as `top.*`.
 Another way to use this package is to `from top import *`, so that all tools are available in the global scope.
 
+> Note that you can use the built-in `help()` function to get more information about the arguments of each of these classes.
+
 <dl>
 
 <dt>log</dt>
@@ -100,7 +102,6 @@ A few handy metaclasses and a function to combine them.
 
 </dl>
 
-> Note that you can use the built-in `help()` function to get more information about the arguments of each of these classes.
 
 ## Automatic Import
 Python has a nifty feature called the `PYTHONSTARTUP` environment variable.
