@@ -5,6 +5,14 @@ This package contains some tools that I personally created and use when developp
 Feel free to use it, but beware that I might change the code in this package at a whim and do not respect any versioning whatsoever.
 The best way would be to copy files or fork this repository if you want parts of it.
 
+```bash
+# Install latest
+pip install git+https://github.com/0phoff/topcraft
+
+# Install "safe" version
+pip install git+https://github.com/0phoff/topcraft@v0.0.0
+```
+
 
 ## Contents
 All tools in this package are exported to the root level.
