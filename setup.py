@@ -7,7 +7,7 @@ def find_packages():
 
 setup.setup(
     name='top',
-    version='0.0.1',
+    version='0.0.0',
     author='0phoff',
     description='TOPCraft: Top Notch Python Debugging Tools',
     long_description=open('README.md').read(),

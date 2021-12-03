@@ -9,7 +9,7 @@ from collections import defaultdict
 from functools import wraps
 from memory_profiler import Pipe, Process, choose_backend, _get_memory
 
-from ._util import AutoDecoratorContextManagerType
+from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 
 __all__ = ['Mem', 'Memit']
 log = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class MemTimer(Process):
         self.pipe.close()
 
 
-class Mem(metaclass=AutoDecoratorContextManagerType):
+class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     This class allows you to measure code memory usage.
     You can use it in various different ways:
@@ -195,7 +195,7 @@ class Mem(metaclass=AutoDecoratorContextManagerType):
         self.reset()
 
 
-class Memit:
+class Memit(metaclass=AutoIterType):
     """
     This class allows you to benchmark the memory of a certain piece of code, by runnning it multiple times.
     It will automatically run your code once before starting the benchmark.

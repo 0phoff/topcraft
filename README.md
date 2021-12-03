@@ -85,6 +85,19 @@ Tool to benchmark either Time,Memory or do nothing depending on the `TOP_PROFILE
 
 </dd>
 
+<dt>meta</dt>
+<dd>
+
+A few handy metaclasses and a function to combine them.  
+**WARNING:** This is probably useless for most of you out there, but I like to use complicated dangerous stuff...
+
+- meta.AutoContextType : Allow to run class-based context manager without instantiation
+- meta.AutoDecoratorType : Allow to run class-based decorator without instantiation
+- meta.AutoIterType : Allow to run class-based iterator without instantiation
+- meta.combine_types : combine various metaclasses together (technically allows to combine any class).
+
+</dd>
+
 </dl>
 
 > Note that you can use the built-in `help()` function to get more information about the arguments of each of these classes.

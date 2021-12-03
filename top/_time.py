@@ -7,7 +7,7 @@ import statistics
 from collections import defaultdict
 from functools import wraps
 
-from ._util import AutoDecoratorContextManagerType
+from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 from ._gc import ToggleGC
 
 __all__ = ['Time', 'Timeit']
@@ -22,7 +22,7 @@ except ImportError:
     time_factor = 1e9
 
 
-class Time(metaclass=AutoDecoratorContextManagerType):
+class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     This class allows you to measure code execution time.
     You can use it in various different ways:
@@ -126,7 +126,7 @@ class Time(metaclass=AutoDecoratorContextManagerType):
         return inner
 
 
-class Timeit:
+class Timeit(metaclass=AutoIterType):
     """
     This class allows you to benchmark the time of a certain piece of code, by runnning it multiple times.
     It will automatically run your code once before starting the benchmark.

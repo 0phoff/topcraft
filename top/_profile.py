@@ -6,7 +6,7 @@ import logging
 
 from ._memory import Mem, Memit
 from ._time import Time, Timeit
-from ._util import AutoDecoratorContextManagerType
+from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 
 __all__ = ['Profile', 'Profileit']
 log = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ except ValueError:
     PROFILE_TYPE = 0
 
 
-class Profile(metaclass=AutoDecoratorContextManagerType):
+class Profile(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     Uses `top.Time` or `top.Mem` depending on the value of the `TOP_PROFILE` (or `PROFILE`) environment variable.
     If the environment variable is set to "time", we use the `Time` class.
@@ -82,7 +82,7 @@ class Profile(metaclass=AutoDecoratorContextManagerType):
         return fn
 
 
-class Profileit:
+class Profileit(metaclass=AutoIterType):
     """
     Uses `top.Timeit` or `top.Memit` depending on the value of the `TOP_PROFILE` (or `PROFILE`) environment variable.
     If the environment variable is set to "time", we use the `Timeit` class.

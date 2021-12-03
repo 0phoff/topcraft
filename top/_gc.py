@@ -5,13 +5,13 @@ import gc
 import logging
 from functools import wraps
 
-from ._util import AutoDecoratorContextManagerType
+from ._meta import AutoContextType, AutoDecoratorType, combine_types
 
 __all__ = ['ToggleGC']
 log = logging.getLogger(__name__)
 
 
-class ToggleGC(metaclass=AutoDecoratorContextManagerType):
+class ToggleGC(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     Toggle Garbage Collection.
     This class can be used as a context manager or function decorator.
