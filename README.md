@@ -41,7 +41,7 @@ Timing tool that allows you to measure time in 3 ways:
 <dd>
 
 Tool to benchmark timings.
-This tool use the `Time` class to measure your code executions multiple times and report the best and average results.
+This tool uses the `Time` class to measure your code executions multiple times and report the best and average results.
 
 </dd>
 
@@ -61,7 +61,7 @@ Note that memory profiling is not exact in python and you should take the result
 <dd>
 
 Tool to benchmark memory usage.
-This tool use the `Mem` class to measure your code executions multiple times and report the worst and average results.
+This tool uses the `Mem` class to measure your code executions multiple times and report the worst and average results.
 
 </dd>
 
