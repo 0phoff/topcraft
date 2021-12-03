@@ -31,10 +31,14 @@ class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         - function decorator
 
     Args:
-        unit (s, ms, us or ns): Time unit; Default 's'
-        label (str): Label to use for logging the timer; Default 'time'
-        verbose (boolean): Whether to log times; Default True
-        store (dict-like): Object to store timings instead of logging (should likely not be used by user); Default None
+        unit (s, ms, us or ns):
+            Time unit; Default 's'
+        label (str):
+            Label to use for logging the timer; Default 'time'
+        verbose (boolean):
+            Whether to log times; Default True
+        store (dict-like):
+            Object to store timings instead of logging (should likely not be used by user); Default None
 
     Note:
         When benchmarking a piece of code, it is usually a good idea to run it once first,
@@ -132,10 +136,14 @@ class Timeit(metaclass=AutoIterType):
     It will automatically run your code once before starting the benchmark.
 
     Args:
-        repeat (int): Number of times to run the code
-        unit (s, ms, us or ns): Time unit; Default 's'
-        label (str): Default label to use when stopping the timer; Default 'total'
-        verbose (boolean): Whether to log intermediate loop times; Default True
+        repeat (int):
+            Number of times to run the code
+        unit (s, ms, us or ns):
+            Time unit; Default 's'
+        label (str):
+            Default label to use when stopping the timer; Default 'total'
+        verbose (boolean):
+            Whether to log intermediate loop times; Default True
 
     Note:
         We disable the automatic garbage collector when running the benchmark in order to have consistent results.

@@ -76,11 +76,16 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         - function decorator
 
     Args:
-        unit (b, kb, mb, gb): Memory unit; Default 'Mb'
-        label (str): Default label to use when stopping the profiler; Default 'memory'
-        verbose (boolean): Whether to log times; Default True
-        store (dict-like): Object to store timings instead of logging (should likely not be used by user); Default None
-        poll_interval (number): Seconds the monitoring process waits for input between memory measurements; Default 1ms
+        unit (b, kb, mb, gb):
+            Memory unit; Default 'Mb'
+        label (str):
+            Default label to use when stopping the profiler; Default 'memory'
+        verbose (boolean):
+            Whether to log times; Default True
+        store (dict-like):
+            Object to store timings instead of logging (should likely not be used by user); Default None
+        poll_interval (number):
+            Seconds the monitoring process waits for input between memory measurements; Default no waiting
 
     Note:
         When benchmarking a piece of code, it is usually a good idea to run it once first,
@@ -94,7 +99,7 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         'gb': 2 ** -10,
     }
 
-    def __init__(self, unit='Mb', label='memory', verbose=True, store=None, poll_interval=1e-3):
+    def __init__(self, unit='Mb', label='memory', verbose=True, store=None, poll_interval=0):
         self.label = label
         self.verbose = verbose
         self.poll_interval = poll_interval
@@ -201,11 +206,16 @@ class Memit(metaclass=AutoIterType):
     It will automatically run your code once before starting the benchmark.
 
     Args:
-        repeat (int): Number of times to run the code
-        unit (b, kb, mb, gb): Memory unit; Default 'Mb'
-        label (str): Default label to use when stopping the profiler; Default 'total'
-        verbose (boolean): Whether to log intermediate loop times; Default True
-        poll_interval (number): Seconds the monitoring process waits for input between memory measurements; Default 1ms
+        repeat (int):
+            Number of times to run the code
+        unit (b, kb, mb, gb):
+            Memory unit; Default 'Mb'
+        label (str):
+            Default label to use when stopping the profiler; Default 'total'
+        verbose (boolean):
+            Whether to log intermediate loop times; Default True
+        poll_interval (number):
+            Seconds the monitoring process waits for input between memory measurements; Default no waiting
 
     Note:
         In order to get consistent results, we manually run the garbage collector after every loop.
@@ -231,7 +241,7 @@ class Memit(metaclass=AutoIterType):
         ...         # benchmark code
         ...         pass
     """
-    def __init__(self, repeat=1, unit='Mb', label='memory', verbose=False, poll_interval=1e-3):
+    def __init__(self, repeat=1, unit='Mb', label='memory', verbose=False, poll_interval=0):
         self.repeat = repeat
         self.label = label
         self.unit = unit if unit.lower() in Mem._units else 'Mb'

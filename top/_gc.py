@@ -18,7 +18,8 @@ class ToggleGC(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     If you do not need to change the default arguments, you can omit the braces for "creating the object".
 
     Args:
-        target (bool or None, optional): Whether to enable or disable the GC; Default False
+        target (bool or None, optional):
+            Whether to enable or disable the GC; Default False
 
     Note:
         If you set the `target` argument to None, we simply toggle the garbage collection state.
