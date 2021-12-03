@@ -4,4 +4,4 @@ from ._memory import *
 from ._profile import *
 from ._time import *
 
-import _meta as meta
+from . import _meta as meta
