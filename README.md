@@ -90,7 +90,9 @@ Tool to benchmark either Time,Memory or do nothing depending on the `TOP_PROFILE
 <dt>meta</dt>
 <dd>
 
-A few handy metaclasses and a function to combine them.  
+A module containing few handy metaclasses and a function to combine them.  
+Note that the functionality here is not exposed to the root level, as you would rarely need this in a script.
+
 **WARNING:** This is probably useless for most of you out there, but I like to use complicated dangerous stuff...
 
 - meta.AutoContextType : Allow to run class-based context manager without instantiation
