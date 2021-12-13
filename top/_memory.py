@@ -154,7 +154,7 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         self._pipe = None
         return self.value
 
-    def _split_store(self, label):
+    def _split_store(self):
         self._pipe.send(1)
         self._splits += 1
         value = self._pipe.recv() * self.unit_factor
