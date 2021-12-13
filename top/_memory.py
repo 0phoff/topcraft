@@ -276,7 +276,7 @@ class Memit(metaclass=AutoIterType):
                 self.values[self.label].append(bg.store[self.label])
 
             if self.verbose:
-                log.info('Loop %d: %.3f%s', i, self.values[self.label][-1], self.unit)
+                log.info('Loop %d: %.3f%s', i, bg.store[self.label], self.unit)
 
             fg.reset()
             fg.store = {}
