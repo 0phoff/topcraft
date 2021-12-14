@@ -16,6 +16,10 @@ log = logging.getLogger(__name__)
 
 
 class MemTimer(Process):
+    START = 0
+    SPLIT = 1
+    STOP = 2
+
     def __init__(self, monitor_pid, interval, pipe, *args, include_children=False, **kw):
         super().__init__(*args, **kw)
         self.monitor_pid = monitor_pid
@@ -36,7 +40,7 @@ class MemTimer(Process):
         max_mem = 0
 
         stop, split = False, False
-        self.pipe.send(0)
+        self.pipe.send(self.START)
         while True:
             mem = _get_memory(
                 self.monitor_pid,
@@ -48,6 +52,7 @@ class MemTimer(Process):
             if stop:
                 break
             elif split:
+                split = False
                 self.pipe.send(max(0, max_mem - start_mem))
                 start_mem = _get_memory(
                     self.monitor_pid,
@@ -58,10 +63,10 @@ class MemTimer(Process):
 
             if (self.pipe.poll(self.interval)):
                 value = self.pipe.recv()
-                if value == 1:
-                    split = True
-                else:
+                if value == self.STOP:
                     stop = True
+                elif value == self.SPLIT:
+                    split = True
 
         self.pipe.send(max(0, max_mem - start_mem))
         self.pipe.close()
@@ -118,7 +123,7 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         self.value = None
         self._splits = 0
         if self._memtimer is not None:
-            self._pipe.send(0)
+            self._pipe.send(MemTimer.STOP)
             self._pipe.recv()
             self._memtimer.join()
             self._memtimer = None
@@ -132,7 +137,8 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         self._pipe.recv()
 
     def split(self):
-        self._pipe.send(1)
+        gc.collect()
+        self._pipe.send(MemTimer.SPLIT)
         self._splits += 1
         value = self._pipe.recv() * self.unit_factor
 
@@ -142,7 +148,8 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         return value
 
     def stop(self):
-        self._pipe.send(0)
+        gc.collect()
+        self._pipe.send(MemTimer.STOP)
         self.value = self._pipe.recv() * self.unit_factor
 
         if self.verbose:
@@ -155,17 +162,24 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         return self.value
 
     def _split_store(self):
-        self._pipe.send(1)
+        gc.collect()
+        self._pipe.send(MemTimer.SPLIT)
         self._splits += 1
         value = self._pipe.recv() * self.unit_factor
+
         self.store[f'{self.label} {self._splits}'] = value
+        if self.verbose:
+            log.info('%s %d: %.3f%s', self.label, self._splits, value, self.unit)
 
     def _stop_store(self):
-        self._pipe.send(0)
+        gc.collect()
+        self._pipe.send(MemTimer.STOP)
         self.value = self._pipe.recv() * self.unit_factor
 
         label = self.label if self._splits == 0 else f'{self.label} {self._splits+1}'
         self.store[label] = self.value
+        if self.verbose:
+            log.info('%s: %.3f%s', label, self.value, self.unit)
 
         self._memtimer.join()
         self._memtimer = None

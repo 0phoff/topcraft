@@ -96,12 +96,16 @@ class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         value = (perf_counter() - self._start) * self.unit_factor
         self._splits += 1
         self.store[f'{self.label} {self._splits}'] = value
+        if self.verbose:
+            log.info('%s %d: %.3f%s', self.label, self._splits, value, self.unit)
         self._start = perf_counter()
 
     def _stop_store(self):
         self.value = (perf_counter() - self._start) * self.unit_factor
         label = self.label if self._splits == 0 else f'{self.label} {self._splits+1}'
         self.store[label] = self.value
+        if self.verbose:
+            log.info('%s: %.3f%s', label, self.value, self.unit)
         self._start = None
 
     def __enter__(self):
