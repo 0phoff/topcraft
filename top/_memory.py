@@ -11,7 +11,7 @@ from memory_profiler import Pipe, Process, choose_backend, _get_memory
 
 from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 
-__all__ = ['Mem', 'Memit']
+__all__ = ['Mem', 'Memit', 'MemTrend']
 log = logging.getLogger(__name__)
 
 
@@ -84,13 +84,13 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         unit (b, kb, mb, gb):
             Memory unit; Default 'Mb'
         label (str):
-            Default label to use when stopping the profiler; Default 'memory'
+            Default label to use when stopping the profiler
         verbose (boolean):
-            Whether to log times; Default True
+            Whether to log times
         store (dict-like):
-            Object to store timings instead of logging (should likely not be used by user); Default None
+            Object to store timings instead of logging (should likely not be used by user)
         poll_interval (number):
-            Seconds the monitoring process waits for input between memory measurements; Default no waiting
+            Seconds the monitoring process waits for input between memory measurements
 
     Note:
         When benchmarking a piece of code, it is usually a good idea to run it once first,
@@ -104,7 +104,7 @@ class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
         'gb': 2 ** -10,
     }
 
-    def __init__(self, unit='Mb', label='memory', verbose=True, store=None, poll_interval=0):
+    def __init__(self, unit='Mb', label='memory', verbose=True, store=None, *, poll_interval=0):
         self.label = label
         self.verbose = verbose
         self.poll_interval = poll_interval
@@ -223,13 +223,15 @@ class Memit(metaclass=AutoIterType):
         repeat (int):
             Number of times to run the code
         unit (b, kb, mb, gb):
-            Memory unit; Default 'Mb'
+            Memory unit
         label (str):
-            Default label to use when stopping the profiler; Default 'total'
+            Default label to use when stopping the profiler
         verbose (boolean):
-            Whether to log intermediate loop times; Default True
+            Whether to log intermediate loop times
+        store (dict-like):
+            Object to store timings instead of logging (should likely not be used by user)
         poll_interval (number):
-            Seconds the monitoring process waits for input between memory measurements; Default no waiting
+            Seconds the monitoring process waits for input between memory measurements
 
     Note:
         In order to get consistent results, we manually run the garbage collector after every loop.
@@ -255,13 +257,19 @@ class Memit(metaclass=AutoIterType):
         ...         # benchmark code
         ...         pass
     """
-    def __init__(self, repeat=1, unit='Mb', label='memory', verbose=False, poll_interval=0):
+    def __init__(self, repeat=1, unit='Mb', label='memory', verbose=False, store=None, *, poll_interval=0):
         self.repeat = repeat
         self.label = label
         self.unit = unit if unit.lower() in Mem._units else 'Mb'
         self.verbose = verbose
         self.poll_interval = poll_interval
         self.values = defaultdict(list)
+
+        if store is not None:
+            self.store = store
+            self.process_results = self._store_results
+        else:
+            self.process_results = self._print_results
 
     def reset(self):
         self.values = defaultdict(list)
@@ -296,13 +304,87 @@ class Memit(metaclass=AutoIterType):
             fg.store = {}
             gc.collect()
 
-        maxlen = max(len(k) for k in self.values.keys()) + 1
-        for name, values in self.values.items():
+        self.process_results(self.values)
+
+    def _print_results(self, values):
+        maxlen = max(len(k) for k in values.keys()) + 1
+        for name, val in values.items():
             name += ':'
             if self.repeat > 1:
                 log.info(
-                    f'{name:<{maxlen}} worst {max(values):.3f}{self.unit} '
-                    f'[mean {statistics.fmean(values):.3f} ± {statistics.stdev(values):.3f}{self.unit}]',
+                    f'{name:<{maxlen}} worst {max(val):.3f}{self.unit} '
+                    f'[mean {statistics.fmean(val):.3f} ± {statistics.stdev(val):.3f}{self.unit}]',
                 )
             else:
-                log.info(f'{name:<{maxlen}} worst {max(values):.3f}{self.unit}')
+                log.info(f'{name:<{maxlen}} worst {max(val):.3f}{self.unit}')
+
+    def _store_results(self, values):
+        if self.verbose:
+            self._print_results(values)
+
+        for name, val in values.items():
+            self.store[name] = max(val)
+
+
+class MemTrend(metaclass=AutoIterType):
+    """
+    This class allows you to benchmark memory trends of a certain piece of code,
+    by runnning it multiple times with an increasing variable.
+    It works by yielding from a `Memit` class multiple times, with a different increasing number each time.
+
+    Args:
+        trend_range (int or range):
+            The increasing number that is returned each loop
+        repeat (int):
+            Number of times we run each trend to get statistics
+        unit (b, kb, mb, gb):
+            Memory unit
+        label (str):
+            Default label to use for the profiler
+        verbose (boolean):
+            Whether to log intermediate loop tim
+        store (dict-like):
+            Object to store timings instead of logging (should likely not be used by user)
+        poll_interval (number):
+            Seconds the monitoring process waits for input between memory measurements
+
+    Note:
+        In order to get consistent results, we manually run the garbage collector after every loop.
+        We do not disable the automatic garbage collector, as a real python run would have it enabled,
+        thus allowing to remove potentially unused memory.
+
+    Example:
+        >>> # Run some code using the `i` variable, which will range from [10,101) with a stepsize of 10
+        >>> # Note that the `m` variable is the same as returned by `Memit`
+        >>> for i, m in MemTrend(range(10,101,10)):
+        >>>     pass
+    """
+    def __init__(self, trend_range=10, repeat=1, unit='Mb', label='memory', verbose=True, *, poll_interval=0):
+        self.trend_range = trend_range if isinstance(trend_range, range) else range(trend_range)
+        self.repeat = repeat
+        self.label = label
+        self.unit = unit if unit.lower() in Mem._units else 'Mb'
+        self.verbose = verbose
+        self.poll_interval = poll_interval
+        self.values = defaultdict(list)
+
+    def reset(self):
+        self.values = defaultdict(list)
+
+    def __iter__(self):
+        self.reset()
+        memit = Memit(self.repeat, self.unit, self.label, False, self.poll_interval, {})
+        trend_len = len(str(self.trend_range.stop))
+
+        for trend in self.trend_range:
+            for m in memit:
+                yield trend, m
+
+            for name, value in memit.store.items():
+                self.values[name].append(value)
+
+            if self.verbose:
+                trend_mems = ', '.join(f'{n}: {v:.3f}{self.unit}' for n, v in memit.store.items())
+                log.info(f'Trend {trend:>trend_len}: {trend_mems}')
+
+            memit.reset()

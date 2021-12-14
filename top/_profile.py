@@ -4,11 +4,11 @@
 import os
 import logging
 
-from ._memory import Mem, Memit
-from ._time import Time, Timeit
+from ._memory import Mem, Memit, MemTrend
+from ._time import Time, Timeit, TimeTrend
 from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 
-__all__ = ['Profile', 'Profileit']
+__all__ = ['Profile', 'Profileit', 'ProfileTrend']
 log = logging.getLogger(__name__)
 
 # Get Profiling type
@@ -53,11 +53,11 @@ class Profile(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     >>> # Running memory profiling
     >>> TOP_PROFILE=mem ./script.py
     """
-    def __new__(cls, unit='X', label='profile', verbose=True, store=None, poll_interval=1e-3):
+    def __new__(cls, unit='X', label='profile', verbose=True, store=None, *, poll_interval=0):
         if PROFILE_TYPE == 1:
             return Time(unit, label, verbose, store)
         if PROFILE_TYPE == 2:
-            return Mem(unit, label, verbose, store, poll_interval)
+            return Mem(unit, label, verbose, store, poll_interval=poll_interval)
         return super().__new__(cls)
 
     def reset(self):
@@ -109,11 +109,11 @@ class Profileit(metaclass=AutoIterType):
     >>> # Running memory profiling
     >>> TOP_PROFILE=mem ./script.py
     """
-    def __new__(cls, repeat=1, unit='X', label='profile', verbose=False, poll_interval=1e-3):
+    def __new__(cls, repeat=1, unit='X', label='profile', verbose=False, store=None, *, poll_interval=0):
         if PROFILE_TYPE == 1:
-            return Timeit(repeat, unit, label, verbose)
+            return Timeit(repeat, unit, label, verbose, store)
         if PROFILE_TYPE == 2:
-            return Memit(repeat, unit, label, verbose, poll_interval)
+            return Memit(repeat, unit, label, verbose, store, poll_interval=poll_interval)
         return super().__new__(cls)
 
     def reset(self):
@@ -121,3 +121,44 @@ class Profileit(metaclass=AutoIterType):
 
     def __iter__(self):
         yield Profile()
+
+
+class ProfileTrend(metaclass=AutoIterType):
+    """
+    Uses `top.TimeTrend` or `top.MemTrend` depending on the value of the `TOP_PROFILE` (or `PROFILE`) environment variable.
+    If the environment variable is set to "time", we use the `TimeTrend` class.
+    If it is set to "mem" or "memory", we use the `MemTrend` class.
+    In all other cases, this class acts as a Dummy that does nothing.
+    For information on its arguments, please check the `top.TimeTrend` and `top.MemTrend` classes.
+
+    This class is very handy if you need to benchmark both Time and Memory consumption of a piece of code.
+    Simply use this `Profileit` class instead of `MemTrend` and `TimeTrend`:
+
+    >>> # Use this profileit iterator as you would use MemTrend/TimeTrend
+    >>> # All arguments or allowed, the class only forwards the necessary ones.
+    >>> for i, p in ProfileTrend(range(10,101,10), poll_interval=1e-6):
+    ...     pass
+
+    You can now run your script and set the TOP_PROFILE environment variable.
+
+    >>> # Running script normally will simply run the code inside the iterator once and yield a dummy `Profile` object.
+    >>> ./script.py
+
+    >>> # Running time profiling
+    >>> TOP_PROFILE=time ./script.py
+
+    >>> # Running memory profiling
+    >>> TOP_PROFILE=mem ./script.py
+    """
+    def __new__(cls, trend_range=10, repeat=1, unit='X', label='profile', verbose=True, *, poll_interval=0):
+        if PROFILE_TYPE == 1:
+            return TimeTrend(trend_range, repeat, unit, label, verbose)
+        if PROFILE_TYPE == 2:
+            return MemTrend(trend_range, repeat, unit, label, verbose, poll_interval=poll_interval)
+        return super().__new__(cls)
+
+    def reset(self):
+        pass
+
+    def __iter__(self):
+        yield (0, Profile())

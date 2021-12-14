@@ -55,6 +55,16 @@ This tool uses the `Time` class to measure your code executions multiple times a
 
 </dd>
 
+<dt>TimeTrend</dt>
+<dd>
+
+Tool to benchmark execution time trends.
+This tools will yield from a `Timeit` class multiple times and return a tuple `num, timeit`.
+This allows you to run code based on this number and thus measure execution speed for eg increasing array sizes.
+Afterwards it will print the worst memory usage for each trend run.
+
+</dd>
+
 <dt>Mem</dt>
 <dd>
 
@@ -75,6 +85,16 @@ This tool uses the `Mem` class to measure your code executions multiple times an
 
 </dd>
 
+<dt>MemTrend</dt>
+<dd>
+
+Tool to benchmark memory usage trends.
+This tools will yield from a `Memit` class multiple times and return a tuple `num, memit`.
+This allows you to run code based on this number and thus measure memory consumption for eg increasing array sizes.
+Afterwards it will print the worst memory usage for each trend run.
+
+</dd>
+
 <dt>Profile</dt>
 <dd>
 
@@ -91,6 +111,16 @@ Tool to measure either Time,Memory or do nothing depending on the `TOP_PROFILE` 
 Tool to benchmark either Time,Memory or do nothing depending on the `TOP_PROFILE` environment variable:
 - TOP_PROFILE=time : Perform time benchmark
 - TOP_PROFILE=mem  : Perform memory benchmark
+- TOP_PROFILE=... or not set : Do nothing
+
+</dd>
+
+<dt>ProfileTrend</dt>
+<dd>
+
+Tool to benchmark either Time or Memory trends or do nothing depending on the `TOP_PROFILE` environment variable:
+- TOP_PROFILE=time : Perform time trend benchmark
+- TOP_PROFILE=mem  : Perform memory trend benchmark
 - TOP_PROFILE=... or not set : Do nothing
 
 </dd>

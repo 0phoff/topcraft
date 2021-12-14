@@ -10,7 +10,7 @@ from functools import wraps
 from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 from ._gc import ToggleGC
 
-__all__ = ['Time', 'Timeit']
+__all__ = ['Time', 'Timeit', 'TimeTrend']
 log = logging.getLogger(__name__)
 
 # Use perf_counter_ns if available
@@ -32,18 +32,17 @@ class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
 
     Args:
         unit (s, ms, us or ns):
-            Time unit; Default 's'
+            Time unit
         label (str):
-            Label to use for logging the timer; Default 'time'
+            Label to use for logging the timer
         verbose (boolean):
-            Whether to log times; Default True
+            Whether to log times
         store (dict-like):
-            Object to store timings instead of logging (should likely not be used by user); Default None
+            Object to store timings instead of logging (should likely not be used by user)
 
     Note:
         When benchmarking a piece of code, it is usually a good idea to run it once first,
         as it will initialize "global" variables, which takes time.
-
         The `Timeit` class takes care of this automatically.
     """
     _units = {
@@ -143,11 +142,13 @@ class Timeit(metaclass=AutoIterType):
         repeat (int):
             Number of times to run the code
         unit (s, ms, us or ns):
-            Time unit; Default 's'
+            Time unit
         label (str):
-            Default label to use when stopping the timer; Default 'total'
+            Default label to use for the timer
         verbose (boolean):
-            Whether to log intermediate loop times; Default True
+            Whether to log intermediate loop values
+        store (dict-like):
+            Object to store timings instead of logging (should likely not be used by user)
 
     Note:
         We disable the automatic garbage collector when running the benchmark in order to have consistent results.
@@ -172,12 +173,18 @@ class Timeit(metaclass=AutoIterType):
         ...         # benchmark code
         ...         pass
     """
-    def __init__(self, repeat=1, unit='s', label='time', verbose=False):
+    def __init__(self, repeat=1, unit='s', label='time', verbose=False, store=None):
         self.repeat = repeat
         self.label = label
         self.unit = unit if unit.lower() in Time._units else 's'
         self.verbose = verbose
         self.values = defaultdict(list)
+
+        if isinstance(store, dict):
+            self.store = store
+            self.process_results = self._store_results
+        else:
+            self.process_results = self._print_results
 
     def reset(self):
         self.values = defaultdict(list)
@@ -213,13 +220,83 @@ class Timeit(metaclass=AutoIterType):
                 fg.store = {}
                 gc.collect()
 
-        maxlen = max(len(k) for k in self.values.keys()) + 1
-        for name, values in self.values.items():
+        self.process_results(self.values)
+
+    def _print_results(self, values):
+        maxlen = max(len(k) for k in values.keys()) + 1
+        for name, val in values.items():
             name += ':'
             if self.repeat > 1:
                 log.info(
-                    f'{name:<{maxlen}} best {min(values):.3f}{self.unit} '
-                    f'[mean {statistics.fmean(values):.3f} ± {statistics.stdev(values):.3f}{self.unit}]',
+                    f'{name:<{maxlen}} best {min(val):.3f}{self.unit} '
+                    f'[mean {statistics.fmean(val):.3f} ± {statistics.stdev(val):.3f}{self.unit}]',
                 )
             else:
-                log.info(f'{name:<{maxlen}} best {min(values):.3f}{self.unit}')
+                log.info(f'{name:<{maxlen}} best {min(val):.3f}{self.unit}')
+
+    def _store_results(self, values):
+        if self.verbose:
+            self._print_results(values)
+
+        for name, val in values.items():
+            self.store[name] = min(val)
+
+
+class TimeTrend(metaclass=AutoIterType):
+    """
+    This class allows you to benchmark time trends of a certain piece of code,
+    by runnning it multiple times with an increasing variable.
+    It works by yielding from a `Timeit` class multiple times, with a different increasing number each time.
+
+    Args:
+        trend_range (int or range):
+            The increasing number that is returned each loop
+        repeat (int):
+            Number of times we run each trend to get statistics
+        unit (s, ms, us or ns):
+            Time unit
+        label (str):
+            Default label to use for the profiler
+        verbose (boolean):
+            Whether to log intermediate loop values
+        store (dict-like):
+            Object to store timings instead of logging (should likely not be used by user)
+
+    Note:
+        We disable the automatic garbage collector when running the benchmark in order to have consistent results.
+        Between loops, we then manually run it.
+
+    Example:
+        >>> # Run some code using the `i` variable, which will range from [10,101) with a stepsize of 10
+        >>> # Note that the `t` variable is the same as returned by `Timeit`
+        >>> for i, t in MemTrend(range(10,101,10)):
+        >>>     pass
+    """
+    def __init__(self, trend_range=10, repeat=1, unit='s', label='time', verbose=True):
+        self.trend_range = trend_range if isinstance(trend_range, range) else range(trend_range)
+        self.repeat = repeat
+        self.label = label
+        self.unit = unit if unit.lower() in Time._units else 's'
+        self.verbose = verbose
+        self.values = defaultdict(list)
+
+    def reset(self):
+        self.values = defaultdict(list)
+
+    def __iter__(self):
+        self.reset()
+        timeit = Timeit(self.repeat, self.unit, self.label, False, {})
+        trend_len = len(str(self.trend_range.stop))
+
+        for trend in self.trend_range:
+            for t in timeit:
+                yield (trend, t)
+
+            for name, value in timeit.store.items():
+                self.values[name].append(value)
+
+            if self.verbose:
+                trend_times = ', '.join(f'{n}: {v:.3f}{self.unit}' for n, v in timeit.store.items())
+                log.info(f'Trend {trend:>trend_len}: {trend_times}')
+
+            timeit.reset()
