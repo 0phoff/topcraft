@@ -225,7 +225,7 @@ class Timeit(metaclass=AutoIterType):
     def _print_results(self, values):
         maxlen = max(len(k) for k in values.keys()) + 1
         for name, val in values.items():
-            name += ':'
+            name = name + ':'
             if self.repeat > 1:
                 log.info(
                     f'{name:<{maxlen}} best {min(val):.3f}{self.unit} '

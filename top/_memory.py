@@ -278,8 +278,8 @@ class Memit(metaclass=AutoIterType):
         if len(self.values):
             log.warning('self.values is not empty, consider calling reset between benchmarks')
 
-        bg = Mem(self.unit, self.label, False, {}, self.poll_interval)
-        fg = Mem(self.unit, self.label, False, {}, self.poll_interval)
+        bg = Mem(self.unit, self.label, False, {}, poll_interval=self.poll_interval)
+        fg = Mem(self.unit, self.label, False, {}, poll_interval=self.poll_interval)
 
         for i in range(self.repeat+1):
             with bg:
@@ -309,7 +309,7 @@ class Memit(metaclass=AutoIterType):
     def _print_results(self, values):
         maxlen = max(len(k) for k in values.keys()) + 1
         for name, val in values.items():
-            name += ':'
+            name = name + ':'
             if self.repeat > 1:
                 log.info(
                     f'{name:<{maxlen}} worst {max(val):.3f}{self.unit} '
