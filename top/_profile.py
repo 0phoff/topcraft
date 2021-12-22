@@ -157,8 +157,11 @@ class ProfileTrend(metaclass=AutoIterType):
             return MemTrend(trend_range, repeat, unit, label, verbose, poll_interval=poll_interval)
         return super().__new__(cls)
 
+    def __init__(self, trend_range=10, *args, **kwargs):
+        self.trend_range = trend_range if isinstance(trend_range, range) else range(trend_range)
+
     def reset(self):
         pass
 
     def __iter__(self):
-        yield (0, Profile())
+        yield (self.trend_range.start, Profile())
