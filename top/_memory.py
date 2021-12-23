@@ -11,7 +11,7 @@ from memory_profiler import Pipe, Process, choose_backend, _get_memory
 
 from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 
-__all__ = ['Mem', 'Memit', 'MemTrend']
+__all__ = ['Memory', 'Memit', 'MemTrend']
 log = logging.getLogger(__name__)
 
 
@@ -72,7 +72,7 @@ class MemTimer(Process):
         self.pipe.close()
 
 
-class Mem(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
+class Memory(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     This class allows you to measure code memory usage.
     You can use it in various different ways:
@@ -260,7 +260,7 @@ class Memit(metaclass=AutoIterType):
     def __init__(self, repeat=1, unit='Mb', label='memory', verbose=False, store=None, *, poll_interval=0):
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Mem._units else 'Mb'
+        self.unit = unit if unit.lower() in Memory._units else 'Mb'
         self.verbose = verbose
         self.poll_interval = poll_interval
         self.values = defaultdict(list)
@@ -278,8 +278,8 @@ class Memit(metaclass=AutoIterType):
         if len(self.values):
             log.warning('self.values is not empty, consider calling reset between benchmarks')
 
-        bg = Mem(self.unit, self.label, False, {}, poll_interval=self.poll_interval)
-        fg = Mem(self.unit, self.label, False, {}, poll_interval=self.poll_interval)
+        bg = Memory(self.unit, self.label, False, {}, poll_interval=self.poll_interval)
+        fg = Memory(self.unit, self.label, False, {}, poll_interval=self.poll_interval)
 
         for i in range(self.repeat+1):
             with bg:
@@ -363,7 +363,7 @@ class MemTrend(metaclass=AutoIterType):
         self.trend_range = trend_range if isinstance(trend_range, range) else range(trend_range)
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Mem._units else 'Mb'
+        self.unit = unit if unit.lower() in Memory._units else 'Mb'
         self.verbose = verbose
         self.poll_interval = poll_interval
         self.values = defaultdict(list)

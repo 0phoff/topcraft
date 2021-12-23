@@ -4,11 +4,11 @@
 import os
 import logging
 
-from ._memory import Mem, Memit, MemTrend
-from ._time import Time, Timeit, TimeTrend
+from ._memory import Memory, Memit, MemTrend
+from ._time import Timer, Timeit, TimeTrend
 from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 
-__all__ = ['Profile', 'Profileit', 'ProfileTrend']
+__all__ = ['Profiler', 'Profileit', 'ProfileTrend']
 log = logging.getLogger(__name__)
 
 # Get Profiling type
@@ -22,24 +22,24 @@ except ValueError:
     PROFILE_TYPE = 0
 
 
-class Profile(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
+class Profiler(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
-    Uses `top.Time` or `top.Mem` depending on the value of the `TOP_PROFILE` (or `PROFILE`) environment variable.
-    If the environment variable is set to "time", we use the `Time` class.
-    If it is set to "mem" or "memory", we use the `Mem` class.
+    Uses `top.Timer` or `top.Memory` depending on the value of the `TOP_PROFILE` (or `PROFILE`) environment variable.
+    If the environment variable is set to "time", we use the `Timer` class.
+    If it is set to "mem" or "memory", we use the `Memory` class.
     In all other cases, this class acts as a Dummy that does nothing.
-    For information on its arguments, please check the `top.Time` and `top.Mem` classes.
+    For information on its arguments, please check the `top.Timer` and `top.Memory` classes.
 
     This class is very handy if you need to measure both Time and Memory consumption of a piece of code.
-    Simply use this `Profile` class instead of `Mem` and `Time`:
+    Simply use this `Profiler` class instead of `Memory` and `Timer`:
 
     >>> # Use this class as a decorator
-    >>> @top.Profile
+    >>> @top.Profiler
     ... def myfunc():
     ...     pass
 
     >>> # Passing in arguments specifically for Mem is allowed
-    >>> with top.Profile(poll_interval=1e-6):
+    >>> with top.Profiler(poll_interval=1e-6):
     ...     pass
 
     You can now run your script and set the TOP_PROFILE environment variable.
@@ -55,9 +55,9 @@ class Profile(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     def __new__(cls, unit='X', label='profile', verbose=True, store=None, *, poll_interval=0):
         if PROFILE_TYPE == 1:
-            return Time(unit, label, verbose, store)
+            return Timer(unit, label, verbose, store)
         if PROFILE_TYPE == 2:
-            return Mem(unit, label, verbose, store, poll_interval=poll_interval)
+            return Memory(unit, label, verbose, store, poll_interval=poll_interval)
         return super().__new__(cls)
 
     def reset(self):
@@ -100,7 +100,7 @@ class Profileit(metaclass=AutoIterType):
 
     You can now run your script and set the TOP_PROFILE environment variable.
 
-    >>> # Running script normally will simply run the code inside the iterator once and yield a dummy `Profile` object.
+    >>> # Running script normally will simply run the code inside the iterator once and yield a dummy `Profiler` object.
     >>> ./script.py
 
     >>> # Running time profiling
@@ -120,7 +120,7 @@ class Profileit(metaclass=AutoIterType):
         pass
 
     def __iter__(self):
-        yield Profile()
+        yield Profiler()
 
 
 class ProfileTrend(metaclass=AutoIterType):
@@ -141,7 +141,7 @@ class ProfileTrend(metaclass=AutoIterType):
 
     You can now run your script and set the TOP_PROFILE environment variable.
 
-    >>> # Running script normally will simply run the code inside the iterator once and yield a dummy `Profile` object.
+    >>> # Running script normally will simply run the code inside the iterator once and yield a dummy `Profiler` object.
     >>> ./script.py
 
     >>> # Running time profiling
@@ -164,4 +164,4 @@ class ProfileTrend(metaclass=AutoIterType):
         pass
 
     def __iter__(self):
-        yield (self.trend_range.start, Profile())
+        yield (self.trend_range.start, Profiler())

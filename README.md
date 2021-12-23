@@ -37,7 +37,7 @@ Disable/Enable/Toggle the garbage collector.
 
 </dd>
 
-<dt>Time</dt>
+<dt>Timer</dt>
 <dd>
 
 Timing tool that allows you to measure time in 3 ways:
@@ -51,7 +51,7 @@ Timing tool that allows you to measure time in 3 ways:
 <dd>
 
 Tool to benchmark timings.
-This tool uses the `Time` class to measure your code executions multiple times and report the best and average results.
+This tool uses the `Timer` class to measure your code executions multiple times and report the best and average results.
 
 </dd>
 
@@ -65,7 +65,7 @@ Afterwards it will print the worst memory usage for each trend run.
 
 </dd>
 
-<dt>Mem</dt>
+<dt>Memory</dt>
 <dd>
 
 Memory Profiling tool that allows you to measure memory usage in 3 ways:
@@ -81,7 +81,7 @@ Note that memory profiling is not exact in python and you should take the result
 <dd>
 
 Tool to benchmark memory usage.
-This tool uses the `Mem` class to measure your code executions multiple times and report the worst and average results.
+This tool uses the `Memory` class to measure your code executions multiple times and report the worst and average results.
 
 </dd>
 
@@ -95,7 +95,7 @@ Afterwards it will print the worst memory usage for each trend run.
 
 </dd>
 
-<dt>Profile</dt>
+<dt>Profiler</dt>
 <dd>
 
 Tool to measure either Time,Memory or do nothing depending on the `TOP_PROFILE` environment variable:
