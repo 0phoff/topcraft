@@ -10,7 +10,7 @@ from functools import wraps
 from ._meta import AutoContextType, AutoDecoratorType, AutoIterType, combine_types
 from ._gc import ToggleGC
 
-__all__ = ['Timer', 'Timeit', 'TimeTrend']
+__all__ = ['Time', 'Timeit', 'TimeTrend']
 log = logging.getLogger(__name__)
 
 # Use perf_counter_ns if available
@@ -22,7 +22,7 @@ except ImportError:
     time_factor = 1e9
 
 
-class Timer(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
+class Time(metaclass=combine_types(AutoContextType, AutoDecoratorType)):
     """
     This class allows you to measure code execution time.
     You can use it in various different ways:
@@ -176,7 +176,7 @@ class Timeit(metaclass=AutoIterType):
     def __init__(self, repeat=1, unit='s', label='time', verbose=False, store=None):
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Timer._units else 's'
+        self.unit = unit if unit.lower() in Time._units else 's'
         self.verbose = verbose
         self.values = defaultdict(list)
 
@@ -193,8 +193,8 @@ class Timeit(metaclass=AutoIterType):
         if len(self.values):
             log.warning('self.values is not empty, consider calling reset between benchmarks')
 
-        bg = Timer(self.unit, self.label, False, {})
-        fg = Timer(self.unit, self.label, False, {})
+        bg = Time(self.unit, self.label, False, {})
+        fg = Time(self.unit, self.label, False, {})
 
         with ToggleGC(False):
             for i in range(self.repeat+1):
@@ -276,7 +276,7 @@ class TimeTrend(metaclass=AutoIterType):
         self.trend_range = trend_range if isinstance(trend_range, range) else range(trend_range)
         self.repeat = repeat
         self.label = label
-        self.unit = unit if unit.lower() in Timer._units else 's'
+        self.unit = unit if unit.lower() in Time._units else 's'
         self.verbose = verbose
         self.values = defaultdict(list)
 
