@@ -297,6 +297,6 @@ class TimeTrend(metaclass=AutoIterType):
 
             if self.verbose:
                 trend_times = ', '.join(f'{n}: {v:.3f}{self.unit}' for n, v in timeit.store.items())
-                log.info(f'Trend {trend:>trend_len}: {trend_times}')
+                log.info(f'Trend {trend:>{trend_len}}: {trend_times}')
 
             timeit.reset()

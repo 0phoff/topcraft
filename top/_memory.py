@@ -385,6 +385,6 @@ class MemTrend(metaclass=AutoIterType):
 
             if self.verbose:
                 trend_mems = ', '.join(f'{n}: {v:.3f}{self.unit}' for n, v in memit.store.items())
-                log.info(f'Trend {trend:>trend_len}: {trend_mems}')
+                log.info(f'Trend {trend:>{trend_len}}: {trend_mems}')
 
             memit.reset()
