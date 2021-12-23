@@ -373,7 +373,7 @@ class MemTrend(metaclass=AutoIterType):
 
     def __iter__(self):
         self.reset()
-        memit = Memit(self.repeat, self.unit, self.label, False, self.poll_interval, {})
+        memit = Memit(self.repeat, self.unit, self.label, False, {}, poll_interval=self.poll_interval)
         trend_len = len(str(self.trend_range.stop))
 
         for trend in self.trend_range:
