@@ -13,8 +13,8 @@ log = logging.getLogger(__name__)
 
 # Get Profiling type
 PROFILE_TYPE = os.environ.get('TOP_PROFILE', os.environ.get('PROFILE', '0'))
-PROFILE_TYPE = '1' if PROFILE_TYPE.lower() in {'t', 'time', 'timer', 'timeit'} else PROFILE_TYPE
-PROFILE_TYPE = '2' if PROFILE_TYPE.lower() in {'m', 'mem', 'memory', 'memit'} else PROFILE_TYPE
+PROFILE_TYPE = '1' if PROFILE_TYPE[0].lower() == 't' else PROFILE_TYPE
+PROFILE_TYPE = '2' if PROFILE_TYPE[0].lower() == 'm' else PROFILE_TYPE
 try:
     PROFILE_TYPE = int(PROFILE_TYPE)
 except ValueError:
